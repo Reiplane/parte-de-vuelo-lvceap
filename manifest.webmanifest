@@ -1,0 +1,19 @@
+{
+  "name": "Parte de Vuelo",
+  "short_name": "Parte Vuelo",
+  "description": "Registro de movimientos de vuelo y preparación de mensajes para WhatsApp.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c1512",
+  "theme_color": "#10221b",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

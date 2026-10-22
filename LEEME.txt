@@ -1,0 +1,42 @@
+# Parte de Vuelo (PWA)
+
+Aplicación inicial para registrar movimientos y preparar mensajes para WhatsApp.
+
+## Archivos
+- `index.html`: interfaz y lógica.
+- `sw.js`: caché para uso sin conexión tras la primera carga.
+- `manifest.webmanifest`: configuración instalable.
+- `icon.svg`: ícono.
+
+## Publicar gratis con GitHub Pages
+1. Crear una cuenta en GitHub si no tenés.
+2. Crear un repositorio nuevo, por ejemplo `parte-de-vuelo`.
+3. Subir los cuatro archivos de esta carpeta a la raíz del repositorio.
+4. En el repositorio, entrar a **Settings → Pages**.
+5. En **Build and deployment**, elegir **Deploy from a branch**, rama `main`, carpeta `/(root)`, y guardar.
+6. Esperar a que GitHub muestre una dirección HTTPS similar a `https://TU-USUARIO.github.io/parte-de-vuelo/`.
+7. Abrir esa dirección en el celular con conexión. Abrir la app y esperar unos segundos para que se descargue la caché.
+8. Probarla una vez con conexión antes de usarla offline.
+
+## Instalar
+- Android/Chrome: abrir la web, menú ⋮ → **Instalar aplicación** o **Agregar a pantalla principal**.
+- iPhone/Safari: abrir la web, botón Compartir → **Agregar a pantalla de inicio**.
+
+## Importante
+- La primera visita necesita conexión; la app no puede instalarse ni descargar su caché desde cero sin internet.
+- Los datos quedan guardados en el almacenamiento local del navegador de ese teléfono. No se sincronizan entre teléfonos y pueden perderse si se borran los datos del navegador.
+- WhatsApp se abre con el texto preparado. Elegí el grupo correcto y tocá Enviar. Luego volvé a la app y marcá “Confirmo que lo envié” solo si realmente se envió.
+- El estado “Enviado” es una confirmación manual del ; la aplicación no puede leer ni verificar lo que ocurre dentro de WhatsApp.
+- El enlace común de WhatsApp no selecciona automáticamente un grupo concreto.
+- Hora local: Argentina (Buenos Aires). Hora UTC se calcula aparte.
+- Las matrículas de ejemplo LV-ABC y LV-XYZ deben reemplazarse por las reales.
+- Esta versión no sustituye procedimientos de seguridad, registros oficiales ni el libro de vuelo.
+
+Funciones añadidas en versión 2:
+- Agregar y quitar matrículas.
+- Administrar aeródromos/lugares y cambiar el origen predeterminado.
+- Despegue con destino opcional; sin destino, informa VUELO LOCAL.
+- Cambio de destino con ubicación actual, nuevo destino y motivo opcional.
+- Botón de comentario libre para novedades no asociadas a un movimiento.
+
+Versión 3: no solicita ni incluye el nombre del instructor en los mensajes. Muestra fecha y hora actual de Argentina y UTC, y la firma discreta reivaj en el borde inferior.

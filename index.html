@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10221b">
+  <meta name="description" content="Parte de movimientos de vuelo para escuelas de aviación.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <title>Parte de Vuelo</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0c1512;--panel:#14221c;--panel2:#1b3026;--line:#2c4939;--text:#f3f7f4;--muted:#b7c9bd;--green:#1b8050;--green2:#2ba56b;--amber:#a87517;--red:#9d3c36}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    button,input,select,textarea{font:inherit}
+    button{border:0;cursor:pointer;touch-action:manipulation}
+    .wrap{max-width:760px;margin:auto;padding:14px 14px calc(28px + env(safe-area-inset-bottom))}
+    header{display:flex;gap:12px;align-items:center;padding:10px 2px 16px}
+    .logo{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#1c4933;font-size:26px}
+    h1{font-size:1.25rem;margin:0;letter-spacing:.02em}
+    .sub,.muted{color:var(--muted);font-size:.9rem}
+    .status{margin-left:auto;border:1px solid var(--line);padding:7px 9px;border-radius:99px;font-size:.78rem;white-space:nowrap}
+    .status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#45d483;margin-right:6px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin:0 0 13px}
+    h2{font-size:1rem;margin:0 0 12px}
+    label{display:block;font-size:.88rem;color:var(--muted);margin:0 0 6px}
+    input,select,textarea{width:100%;background:#0c1712;border:1px solid #3a5847;color:var(--text);border-radius:11px;padding:12px;min-height:46px}
+    textarea{min-height:82px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .stack{display:grid;gap:10px}
+    .btn{border-radius:12px;padding:13px 12px;font-weight:700;min-height:48px}
+    .btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #a5f3c5;outline-offset:2px}
+    .primary{background:var(--green2);color:#07170e}
+    .secondary{background:#263e31;color:var(--text);border:1px solid #45634f}
+    .event-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .event{min-height:84px;display:flex;align-items:center;gap:11px;text-align:left;background:#1b4932;color:white;border:1px solid #2f7750}
+    .event .emoji{font-size:1.7rem}
+    .event small{display:block;font-weight:400;color:#d1e8d8;margin-top:3px}
+    .event.change{background:#4a391a;border-color:#806222}
+    .event:active,.btn:active{transform:scale(.99)}
+    .hidden{display:none!important}
+    .preview{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1711;border:1px solid var(--line);border-radius:12px;padding:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92rem}
+    .pill{display:inline-block;border-radius:99px;padding:4px 8px;font-size:.75rem;font-weight:700}
+    .pending{background:#59451e;color:#ffe6a5}.sent{background:#174c31;color:#a9f6c6}.draft{background:#293b31;color:#d3e0d6}
+    .entry{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px}
+    .entrytop{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .entry p{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;font-size:.9rem}
+    .entry-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .entry-actions button{min-height:40px;padding:9px 11px;font-size:.85rem}
+    .small{font-size:.8rem}
+    .clockbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 13px;padding:11px 13px;background:#14221c;border:1px solid var(--line);border-radius:14px}
+    .clockitem{font-size:.8rem;color:var(--muted)}.clockitem strong{display:block;color:var(--text);font-size:.95rem;font-weight:650;font-variant-numeric:tabular-nums}
+    .signature{position:fixed;right:9px;bottom:5px;z-index:5;color:#8ea697;background:rgba(12,21,18,.82);padding:2px 5px;border-radius:5px;font-size:.65rem;letter-spacing:.08em;opacity:.8;pointer-events:none}
+    @media(max-width:420px){.clockbar{gap:5px;padding:9px}.clockitem strong{font-size:.84rem}}
+    .note{font-size:.85rem;color:var(--muted);margin:9px 0 0}
+    .danger{background:#482522;border:1px solid #7a3e37;color:#ffd7d2}
+    footer{text-align:center;color:#8ea697;font-size:.78rem;padding:12px}
+    @media(max-width:420px){.wrap{padding-left:10px;padding-right:10px}.card{padding:12px}.row{grid-template-columns:1fr}.status{font-size:.7rem}.event{padding:10px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true">✈️</div>
+    <div><h1>PARTE DE VUELO</h1><div class="sub">Movimientos · Escuela de vuelo</div></div>
+    <div class="status" id="connectionStatus">Listo</div>
+  </header>
+
+  <section class="clockbar" aria-label="Fecha y hora actuales">
+    <div class="clockitem">ARGENTINA · LOCAL<strong id="clockLocal">--/--/---- --:--:--</strong></div>
+    <div class="clockitem">UTC<strong id="clockUtc">----/--/-- --:--:--</strong></div>
+  </section>
+
+  <section class="card">
+    <h2>1. Aeronave</h2>
+    <div>
+      <label for="aircraft">Matrícula</label>
+      <select id="aircraft"></select>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div>
+        <label for="newAircraft">Agregar matrícula nueva</label>
+        <input id="newAircraft" placeholder="Ej. LV-ABC" autocapitalize="characters">
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn secondary" id="addAircraft" style="width:100%">＋ Guardar matrícula</button>
+      </div>
+    </div>
+    <p class="note">Las matrículas se guardan solo en este dispositivo.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Configurar aeródromos</h2>
+    <label for="defaultOrigin">Origen predeterminado</label>
+    <input id="defaultOrigin" list="aerodromeOptions" value="GEZ" placeholder="Ej. GEZ">
+    <datalist id="aerodromeOptions"></datalist>
+    <div class="row" style="margin-top:10px">
+      <div><label for="newAerodrome">Agregar aeródromo / lugar</label><input id="newAerodrome" placeholder="Ej. SAL" autocapitalize="characters"></div>
+      <div style="display:flex;align-items:end"><button class="btn secondary" id="addAerodrome" style="width:100%">＋ Guardar lugar</button></div>
+    </div>
+    <div id="aerodromeList" class="muted small" style="margin-top:10px"></div>
+    <p class="note">Podés modificar esta lista cuando quieras. También podés escribir un lugar nuevo directamente en los campos del reporte.</p>
+  </section>
+  <section class="card">
+    <h2>3. Registrar movimiento</h2>
+    <div class="event-grid">
+      <button class="btn event" data-event="start"><span class="emoji">🔑</span><span>Puesta en marcha<small>Origen + hora</small></span></button>
+      <button class="btn event" data-event="takeoff"><span class="emoji">🛫</span><span>Despegue<small>Origen + hora</small></span></button>
+      <button class="btn event change" data-event="divert"><span class="emoji">🧭</span><span>Cambio de destino<small>Nuevo destino + motivo opcional</small></span></button>
+      <button class="btn event" data-event="landing"><span class="emoji">🛬</span><span>Aterrizaje<small>Lugar + hora</small></span></button>
+      <button class="btn event" data-event="comment"><span class="emoji">📝</span><span>Comentario libre<small>Mensaje no asociado a un movimiento</small></span></button>
+    </div>
+  </section>
+
+  <section class="card hidden" id="detailsCard">
+    <h2 id="detailsTitle">Completar movimiento</h2>
+    <div class="stack">
+      <div id="originWrap"><label id="originLabel" for="origin">Origen / lugar</label><input id="origin" list="aerodromeOptions" value="GEZ" placeholder="Ej. GEZ" autocapitalize="characters"></div>
+      <div id="destinationWrap" class="hidden"><label id="destinationLabel" for="destination">Destino</label><input id="destination" list="aerodromeOptions" placeholder="Ej. SAL" autocapitalize="characters"></div>
+      <div id="reasonWrap" class="hidden"><label for="reason">Motivo del cambio (opcional)</label><input id="reason" placeholder="Ej. meteorología, requerimiento operativo"></div>
+      <div id="commentWrap" class="hidden"><label for="comment">Comentario libre</label><textarea id="comment" placeholder="Ej. Vuelo LOCAL, demora, novedad operativa..."></textarea></div>
+      <div id="extraWrap"><label for="extra">Observaciones adicionales (opcional)</label><input id="extra" placeholder="Dato adicional, si hace falta"></div>
+      <div class="row"><button class="btn secondary" id="cancelDetails">Cancelar</button><button class="btn primary" id="makeMessage">Preparar mensaje</button></div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="previewCard">
+    <h2>3. Revisar y compartir</h2>
+    <div id="preview" class="preview"></div>
+    <div class="row" style="margin-top:11px">
+      <button class="btn secondary" id="editMessage">Volver a editar</button>
+      <button class="btn primary" id="shareMessage">Compartir por WhatsApp</button>
+    </div>
+    <p class="note">WhatsApp se abrirá con el texto preparado. Elegí el grupo correcto y enviá el mensaje. Al volver, confirmá abajo si realmente se envió.</p>
+    <div class="row" style="margin-top:10px">
+      <button class="btn secondary" id="markPending">Dejar pendiente</button>
+      <button class="btn primary" id="markSent">✓ Confirmo que lo envié</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="entrytop">
+      <h2 style="margin:0">Historial de este teléfono</h2>
+      <button class="btn secondary small" id="exportHistory" style="min-height:38px;padding:8px 10px">Exportar CSV</button>
+    </div>
+    <p class="note">“Enviado” significa que quien registra el movimiento lo confirmó manualmente; la aplicación no puede verificarlo dentro de WhatsApp.</p>
+    <div id="history"></div>
+    <button class="btn danger" id="clearHistory" style="width:100%;margin-top:12px">Borrar historial local</button>
+  </section>
+  <footer>Parte de Vuelo · Funciona sin conexión después de la primera carga · No reemplaza los procedimientos operativos de la escuela. · Creado por @reivaj</footer>
+</div>
+<div class="signature" aria-label="Creado por @reivaj">@reivaj</div>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const KEY = "parteVueloPwa_v1";
+  const defaultState = { aircraft:["LV-ABC","LV-XYZ"], aerodromes:["GEZ","SABE","SAL"], defaultOrigin:"GEZ", history:[] };
+  let state = loadState();
+  let currentEvent = null;
+  let draft = null;
+  let editingDraft = false;
+  let returningFromShare = false;
+
+  function loadState(){
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (v && Array.isArray(v.aircraft) && Array.isArray(v.history)) return {...defaultState,...v, aerodromes:Array.isArray(v.aerodromes)?v.aerodromes:defaultState.aerodromes};
+    } catch(e) {}
+    return structuredClone(defaultState);
+  }
+  function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function localDateTime(date){ return new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date); }
+  function utcTime(date){ return new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date).replace(",","") + " UTC"; }
+  function updateClocks(){
+    const now=new Date();
+    $("clockLocal").textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).format(now);
+    $("clockUtc").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).format(now).replace(",","")+" UTC";
+  }
+  function eventName(type){ return ({start:"PUESTA EN MARCHA",takeoff:"DESPEGUE",divert:"CAMBIO DE DESTINO / ALTERNATIVA",landing:"ATERRIZAJE",comment:"COMENTARIO"})[type] || type; }
+  function renderAerodromes(){
+    $("aerodromeOptions").innerHTML=state.aerodromes.map(a=>`<option value="${escapeHtml(a)}"></option>`).join("");
+    $("defaultOrigin").value=state.defaultOrigin||"GEZ";
+    $("aerodromeList").innerHTML=state.aerodromes.map(a=>`<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #3a5847;border-radius:99px;padding:4px 8px;margin:3px">${escapeHtml(a)} <button type="button" data-remove-aerodrome="${escapeHtml(a)}" aria-label="Eliminar ${escapeHtml(a)}" style="color:#ffd7d2;background:transparent;font-weight:bold">×</button></span>`).join("");
+  }
+  function renderAircraft(){
+    const select = $("aircraft");
+    const previous = select.value;
+    select.innerHTML = state.aircraft.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    if(state.aircraft.includes(previous)) select.value = previous;
+  }
+  function updateConnection(){
+    $("connectionStatus").textContent = navigator.onLine ? "Con conexión" : "Sin conexión";
+    $("connectionStatus").style.color = navigator.onLine ? "#a9f6c6" : "#ffe6a5";
+  }
+  function startEvent(type){
+    currentEvent=type; draft=null;
+    $("detailsCard").classList.remove("hidden"); $("previewCard").classList.add("hidden");
+    $("detailsTitle").textContent=eventName(type);
+    const isComment=type==="comment", needsOrigin=["start","takeoff","divert","landing"].includes(type), needsDestination=["takeoff","divert"].includes(type);
+    $("originWrap").classList.toggle("hidden",!needsOrigin);
+    $("destinationWrap").classList.toggle("hidden",!needsDestination);
+    $("reasonWrap").classList.toggle("hidden",type!=="divert");
+    $("commentWrap").classList.toggle("hidden",!isComment);
+    $("extraWrap").classList.toggle("hidden",isComment);
+    $("originLabel").textContent=type==="divert"?"Desde dónde se alterna / ubicación actual":type==="landing"?"Lugar de aterrizaje":"Aeródromo de salida";
+    $("destinationLabel").textContent=type==="divert"?"Nuevo destino / aeródromo alternativo":"Destino (opcional; vacío = vuelo local)";
+    $("origin").value=state.defaultOrigin||"GEZ"; $("destination").value=""; $("reason").value=""; $("comment").value=""; $("extra").value="";
+    $("detailsCard").scrollIntoView({behavior:"smooth",block:"start"});
+    (isComment?$("comment"):$("origin")).focus({preventScroll:true});
+  }
+  function makeDraft(){
+    const aircraft=$("aircraft").value, type=currentEvent;
+    const origin=$("origin").value.trim().toUpperCase(), destination=$("destination").value.trim().toUpperCase();
+    const reason=$("reason").value.trim(), comment=$("comment").value.trim(), extra=$("extra").value.trim();
+    if(!aircraft){alert("Elegí una matrícula.");return;}
+    if(type==="comment"&&!comment){alert("Escribí el comentario que querés enviar.");$("comment").focus();return;}
+    if(type!=="comment"&&type!=="divert"&&!origin){alert("Ingresá el aeródromo o lugar.");return;}
+    if(type==="divert"&&(!origin||!destination)){alert("Ingresá desde dónde se alterna y el nuevo destino.");return;}
+    const now=new Date(), lines=["✈️ "+aircraft];
+    if(type==="comment") lines.push("📝 COMENTARIO: "+comment);
+    else if(type==="start") lines.push("🔑 PUESTA EN MARCHA: "+origin);
+    else if(type==="takeoff") lines.push("🛫 DESPEGUE: "+origin+(destination?" → "+destination:" · VUELO LOCAL"));
+    else if(type==="divert"){lines.push("🧭 CAMBIO DE DESTINO / ALTERNATIVA: "+origin+" → "+destination);if(reason)lines.push("📝 Motivo: "+reason);}
+    else if(type==="landing") lines.push("🛬 ATERRIZADO EN: "+origin);
+    lines.push("🕒 Hora Argentina: "+localDateTime(now),"🕒 Hora UTC: "+utcTime(now));
+    if(extra)lines.push("ℹ️ Observaciones: "+extra);
+    draft={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),type,aircraft,origin,destination,location:destination||origin,reason,comment,extra,localTime:localDateTime(now),utcTime:utcTime(now),createdAt:now.toISOString(),message:lines.join("\n"),status:"pending"};
+    showDraft();
+  }
+  function showDraft(){
+    $("preview").textContent = draft.message;
+    $("detailsCard").classList.add("hidden");
+    $("previewCard").classList.remove("hidden");
+    $("previewCard").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function saveDraft(status){
+    if(!draft) return;
+    const existing = state.history.findIndex(h=>h.id===draft.id);
+    draft.status = status;
+    draft.statusUpdatedAt = new Date().toISOString();
+    if(existing >= 0) state.history[existing] = {...draft};
+    else state.history.unshift({...draft});
+    saveState(); renderHistory();
+    $("previewCard").classList.add("hidden");
+    $("detailsCard").classList.add("hidden");
+    draft = null;
+    currentEvent = null;
+  }
+  function shareDraft(){
+    if(!draft) return;
+    const url = "https://wa.me/?text=" + encodeURIComponent(draft.message);
+    returningFromShare = true;
+    window.open(url, "_blank", "noopener");
+    // Save as pending before leaving, so a browser switch/crash does not lose the prepared report.
+    const exists = state.history.some(h=>h.id===draft.id);
+    if(!exists){ state.history.unshift({...draft,status:"pending",statusUpdatedAt:new Date().toISOString()}); saveState(); renderHistory(); }
+    alert("Mensaje preparado. En WhatsApp elegí el grupo correcto y tocá Enviar. Al volver, usá “Confirmo que lo envié” solo si efectivamente se envió.");
+  }
+  function renderHistory(){
+    const root = $("history");
+    if(!state.history.length){ root.innerHTML = '<p class="muted">Todavía no hay movimientos guardados.</p>'; return; }
+    root.innerHTML = state.history.map(h=>{
+      const statusClass = h.status === "sent" ? "sent" : "pending";
+      const statusText = h.status === "sent" ? "ENVIADO · confirmado" : "PENDIENTE · verificar envío";
+      return `<article class="entry">
+        <div class="entrytop"><strong>${escapeHtml(h.aircraft)} · ${escapeHtml(eventName(h.type))}</strong><span class="pill ${statusClass}">${statusText}</span></div>
+        <div class="muted small">${escapeHtml(h.localTime)} Argentina · ${escapeHtml(h.utcTime)}</div>
+        <p>${escapeHtml(h.message)}</p>
+        <div class="entry-actions">
+          <button class="btn secondary" data-action="share" data-id="${escapeHtml(h.id)}">Volver a compartir</button>
+          ${h.status !== "sent" ? `<button class="btn primary" data-action="sent" data-id="${escapeHtml(h.id)}">Confirmar enviado</button>` : `<button class="btn secondary" data-action="pending" data-id="${escapeHtml(h.id)}">Marcar pendiente</button>`}
+          <button class="btn secondary" data-action="copy" data-id="${escapeHtml(h.id)}">Copiar texto</button>
+        </div>
+      </article>`;
+    }).join("");
+  }
+  $("addAircraft").addEventListener("click",()=>{
+    const value = $("newAircraft").value.trim().toUpperCase().replace(/\s+/g,"");
+    if(!value){ alert("Escribí una matrícula."); return; }
+    if(!state.aircraft.includes(value)) state.aircraft.push(value);
+    state.aircraft.sort(); saveState(); renderAircraft(); $("aircraft").value=value; $("newAircraft").value="";
+  });
+  $("defaultOrigin").addEventListener("change",()=>{const v=$("defaultOrigin").value.trim().toUpperCase();if(v){state.defaultOrigin=v;if(!state.aerodromes.includes(v))state.aerodromes.push(v);saveState();renderAerodromes();}});
+  $("addAerodrome").addEventListener("click",()=>{const v=$("newAerodrome").value.trim().toUpperCase();if(!v){alert("Escribí un aeródromo o lugar.");return;}if(!state.aerodromes.includes(v))state.aerodromes.push(v);state.aerodromes.sort();saveState();renderAerodromes();$("newAerodrome").value="";});
+  $("aerodromeList").addEventListener("click",e=>{const b=e.target.closest("button[data-remove-aerodrome]");if(!b)return;const v=b.dataset.removeAerodrome;if(v===state.defaultOrigin){alert("Ese es el origen predeterminado. Cambialo antes de eliminarlo.");return;}if(confirm("¿Eliminar "+v+" de la lista? Los reportes anteriores no se borran.")){state.aerodromes=state.aerodromes.filter(a=>a!==v);saveState();renderAerodromes();}});
+  document.querySelectorAll("[data-event]").forEach(b=>b.addEventListener("click",()=>startEvent(b.dataset.event)));
+  $("cancelDetails").addEventListener("click",()=>{$("detailsCard").classList.add("hidden");currentEvent=null;});
+  $("makeMessage").addEventListener("click",makeDraft);
+  $("editMessage").addEventListener("click",()=>{ if(!draft)return; const old=draft; startEvent(old.type); $("origin").value=old.origin||state.defaultOrigin; $("destination").value=old.destination||""; $("reason").value=old.reason||""; $("comment").value=old.comment||""; $("extra").value=old.extra||""; $("previewCard").classList.add("hidden"); $("detailsCard").classList.remove("hidden"); });
+  $("shareMessage").addEventListener("click",shareDraft);
+  $("markPending").addEventListener("click",()=>saveDraft("pending"));
+  $("markSent").addEventListener("click",()=>{if(confirm("¿Confirmás que el mensaje se envió al grupo correcto de WhatsApp?")) saveDraft("sent");});
+  $("history").addEventListener("click",async e=>{
+    const b=e.target.closest("button[data-action]"); if(!b)return;
+    const item=state.history.find(h=>h.id===b.dataset.id); if(!item)return;
+    if(b.dataset.action==="share"){window.open("https://wa.me/?text="+encodeURIComponent(item.message),"_blank","noopener");}
+    if(b.dataset.action==="sent"){if(confirm("¿Confirmás que este mensaje se envió al grupo correcto?")) item.status="sent";}
+    if(b.dataset.action==="pending") item.status="pending";
+    if(b.dataset.action==="copy"){try{await navigator.clipboard.writeText(item.message);alert("Texto copiado.");}catch(err){alert("No se pudo copiar automáticamente. Mantené pulsado el texto del mensaje para copiarlo.");}}
+    saveState();renderHistory();
+  });
+  $("exportHistory").addEventListener("click",()=>{
+    const rows=[["matricula","evento","hora_argentina","hora_utc","estado","mensaje"],...state.history.map(h=>[h.aircraft,eventName(h.type),h.localTime,h.utcTime,h.status,h.message])];
+    const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\r\n");
+    const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="parte-vuelo-historial.csv";a.click();URL.revokeObjectURL(a.href);
+  });
+  $("clearHistory").addEventListener("click",()=>{if(confirm("¿Borrar todo el historial de este teléfono? Esta acción no se puede deshacer.")){state.history=[];saveState();renderHistory();}});
+  window.addEventListener("online",updateConnection); window.addEventListener("offline",updateConnection);
+  renderAircraft();renderAerodromes();renderHistory();updateConnection();updateClocks();setInterval(updateClocks,1000);
+  if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>
