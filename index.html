@@ -92,14 +92,13 @@
   <section class="card">
     <h2>2. Configurar aeródromos</h2>
     <label for="defaultOrigin">Origen predeterminado</label>
-    <input id="defaultOrigin" list="aerodromeOptions" value="GEZ" placeholder="Ej. GEZ">
-    <datalist id="aerodromeOptions"></datalist>
+    <select id="defaultOrigin" aria-label="Origen predeterminado"></select>
     <div class="row" style="margin-top:10px">
       <div><label for="newAerodrome">Agregar aeródromo / lugar</label><input id="newAerodrome" placeholder="Ej. SAL" autocapitalize="characters"></div>
       <div style="display:flex;align-items:end"><button class="btn secondary" id="addAerodrome" style="width:100%">＋ Guardar lugar</button></div>
     </div>
     <div id="aerodromeList" class="muted small" style="margin-top:10px"></div>
-    <p class="note">Podés modificar esta lista cuando quieras. También podés escribir un lugar nuevo directamente en los campos del reporte.</p>
+    <p class="note">Podés modificar esta lista cuando quieras. Los aeródromos guardados aparecerán como opciones para elegir en los reportes.</p>
   </section>
   <section class="card">
     <h2>3. Registrar movimiento</h2>
@@ -115,8 +114,8 @@
   <section class="card hidden" id="detailsCard">
     <h2 id="detailsTitle">Completar movimiento</h2>
     <div class="stack">
-      <div id="originWrap"><label id="originLabel" for="origin">Origen / lugar</label><input id="origin" list="aerodromeOptions" value="GEZ" placeholder="Ej. GEZ" autocapitalize="characters"></div>
-      <div id="destinationWrap" class="hidden"><label id="destinationLabel" for="destination">Destino</label><input id="destination" list="aerodromeOptions" placeholder="Ej. SAL" autocapitalize="characters"></div>
+      <div id="originWrap"><label id="originLabel" for="origin">Origen / lugar</label><select id="origin"></select></div>
+      <div id="destinationWrap" class="hidden"><label id="destinationLabel" for="destination">Destino</label><select id="destination"></select></div>
       <div id="reasonWrap" class="hidden"><label for="reason">Motivo del cambio (opcional)</label><input id="reason" placeholder="Ej. meteorología, requerimiento operativo"></div>
       <div id="commentWrap" class="hidden"><label for="comment">Comentario libre</label><textarea id="comment" placeholder="Ej. Vuelo LOCAL, demora, novedad operativa..."></textarea></div>
       <div id="extraWrap"><label for="extra">Observaciones adicionales (opcional)</label><input id="extra" placeholder="Dato adicional, si hace falta"></div>
@@ -180,9 +179,18 @@
   }
   function eventName(type){ return ({start:"PUESTA EN MARCHA",takeoff:"DESPEGUE",divert:"CAMBIO DE DESTINO / ALTERNATIVA",landing:"ATERRIZAJE",comment:"COMENTARIO"})[type] || type; }
   function renderAerodromes(){
-    $("aerodromeOptions").innerHTML=state.aerodromes.map(a=>`<option value="${escapeHtml(a)}"></option>`).join("");
-    $("defaultOrigin").value=state.defaultOrigin||"GEZ";
-    $("aerodromeList").innerHTML=state.aerodromes.map(a=>`<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #3a5847;border-radius:99px;padding:4px 8px;margin:3px">${escapeHtml(a)} <button type="button" data-remove-aerodrome="${escapeHtml(a)}" aria-label="Eliminar ${escapeHtml(a)}" style="color:#ffd7d2;background:transparent;font-weight:bold">×</button></span>`).join("");
+    const previousDefault=$("defaultOrigin").value || state.defaultOrigin || "GEZ";
+    const previousOrigin=$("origin").value || state.defaultOrigin || "GEZ";
+    const previousDestination=$("destination").value || "";
+    const sorted=[...state.aerodromes].sort();
+    $("defaultOrigin").innerHTML=sorted.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    $("origin").innerHTML=sorted.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    $("destination").innerHTML='<option value="">Seleccionar destino (opcional)</option>'+sorted.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    $("defaultOrigin").value=sorted.includes(state.defaultOrigin)?state.defaultOrigin:(sorted[0]||"");
+    if(sorted.includes(previousOrigin)) $("origin").value=previousOrigin;
+    else $("origin").value=state.defaultOrigin||sorted[0]||"";
+    $("destination").value=sorted.includes(previousDestination)?previousDestination:"";
+    $("aerodromeList").innerHTML=sorted.map(a=>`<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #3a5847;border-radius:99px;padding:4px 8px;margin:3px">${escapeHtml(a)} <button type="button" data-remove-aerodrome="${escapeHtml(a)}" aria-label="Eliminar ${escapeHtml(a)}" style="color:#ffd7d2;background:transparent;font-weight:bold">×</button></span>`).join("");
   }
   function renderAircraft(){
     const select = $("aircraft");
@@ -282,7 +290,7 @@
     if(!state.aircraft.includes(value)) state.aircraft.push(value);
     state.aircraft.sort(); saveState(); renderAircraft(); $("aircraft").value=value; $("newAircraft").value="";
   });
-  $("defaultOrigin").addEventListener("change",()=>{const v=$("defaultOrigin").value.trim().toUpperCase();if(v){state.defaultOrigin=v;if(!state.aerodromes.includes(v))state.aerodromes.push(v);saveState();renderAerodromes();}});
+  $("defaultOrigin").addEventListener("change",()=>{const v=$("defaultOrigin").value.trim().toUpperCase();if(v){state.defaultOrigin=v;saveState();if(!$("origin").value) $("origin").value=v;}});
   $("addAerodrome").addEventListener("click",()=>{const v=$("newAerodrome").value.trim().toUpperCase();if(!v){alert("Escribí un aeródromo o lugar.");return;}if(!state.aerodromes.includes(v))state.aerodromes.push(v);state.aerodromes.sort();saveState();renderAerodromes();$("newAerodrome").value="";});
   $("aerodromeList").addEventListener("click",e=>{const b=e.target.closest("button[data-remove-aerodrome]");if(!b)return;const v=b.dataset.removeAerodrome;if(v===state.defaultOrigin){alert("Ese es el origen predeterminado. Cambialo antes de eliminarlo.");return;}if(confirm("¿Eliminar "+v+" de la lista? Los reportes anteriores no se borran.")){state.aerodromes=state.aerodromes.filter(a=>a!==v);saveState();renderAerodromes();}});
   document.querySelectorAll("[data-event]").forEach(b=>b.addEventListener("click",()=>startEvent(b.dataset.event)));
