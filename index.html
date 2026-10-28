@@ -86,6 +86,7 @@
         <button class="btn secondary" id="addAircraft" style="width:100%">＋ Guardar matrícula</button>
       </div>
     </div>
+    <h3 style="margin:14px 0 4px;font-size:.9rem">MATRÍCULAS GUARDADAS · Podés eliminar con ×</h3>
     <div id="aircraftList" class="muted small" style="margin-top:10px"></div>
     <p class="note">Las matrículas se guardan solo en este dispositivo. Podés quitar una matrícula con ×; los reportes anteriores se conservan.</p>
   </section>
@@ -168,7 +169,7 @@
       if (v && Array.isArray(v.aircraft) && Array.isArray(v.history)) {
         const migrated = {...defaultState,...v, aerodromes:Array.isArray(v.aerodromes)?v.aerodromes:defaultState.aerodromes};
         // Quitar las matrículas de demostración que venían precargadas en versiones anteriores.
-        migrated.aircraft = migrated.aircraft.filter(a => !["LV-ABC","LV-XYZ"].includes(String(a).toUpperCase()));
+        migrated.aircraft = migrated.aircraft.filter(a => !["LV-ABC","LV-XYZ"].includes(String(a).trim().toUpperCase()));
         return migrated;
       }
     } catch(e) {}
