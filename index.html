@@ -86,7 +86,8 @@
         <button class="btn secondary" id="addAircraft" style="width:100%">＋ Guardar matrícula</button>
       </div>
     </div>
-    <p class="note">Las matrículas se guardan solo en este dispositivo.</p>
+    <div id="aircraftList" class="muted small" style="margin-top:10px"></div>
+    <p class="note">Las matrículas se guardan solo en este dispositivo. Podés quitar una matrícula con ×; los reportes anteriores se conservan.</p>
   </section>
 
   <section class="card">
@@ -154,7 +155,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const KEY = "parteVueloPwa_v1";
-  const defaultState = { aircraft:["LV-ABC","LV-XYZ"], aerodromes:["GEZ","SABE","SAL"], defaultOrigin:"GEZ", history:[] };
+  const defaultState = { aircraft:[], aerodromes:["GEZ","SABE","SAL"], defaultOrigin:"GEZ", history:[] };
   let state = loadState();
   let currentEvent = null;
   let draft = null;
@@ -164,7 +165,12 @@
   function loadState(){
     try {
       const v = JSON.parse(localStorage.getItem(KEY) || "null");
-      if (v && Array.isArray(v.aircraft) && Array.isArray(v.history)) return {...defaultState,...v, aerodromes:Array.isArray(v.aerodromes)?v.aerodromes:defaultState.aerodromes};
+      if (v && Array.isArray(v.aircraft) && Array.isArray(v.history)) {
+        const migrated = {...defaultState,...v, aerodromes:Array.isArray(v.aerodromes)?v.aerodromes:defaultState.aerodromes};
+        // Quitar las matrículas de demostración que venían precargadas en versiones anteriores.
+        migrated.aircraft = migrated.aircraft.filter(a => !["LV-ABC","LV-XYZ"].includes(String(a).toUpperCase()));
+        return migrated;
+      }
     } catch(e) {}
     return structuredClone(defaultState);
   }
@@ -195,8 +201,11 @@
   function renderAircraft(){
     const select = $("aircraft");
     const previous = select.value;
-    select.innerHTML = state.aircraft.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
-    if(state.aircraft.includes(previous)) select.value = previous;
+    const sorted = [...state.aircraft].sort();
+    select.innerHTML = '<option value="">Seleccionar matrícula</option>' + sorted.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    if(sorted.includes(previous)) select.value = previous;
+    else select.value = "";
+    $("aircraftList").innerHTML = sorted.length ? sorted.map(a=>`<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #3a5847;border-radius:99px;padding:4px 8px;margin:3px">${escapeHtml(a)} <button type="button" data-remove-aircraft="${escapeHtml(a)}" aria-label="Eliminar ${escapeHtml(a)}" style="color:#ffd7d2;background:transparent;font-weight:bold">×</button></span>`).join("") : '<span class="muted">Todavía no hay matrículas agregadas.</span>';
   }
   function updateConnection(){
     $("connectionStatus").textContent = navigator.onLine ? "Con conexión" : "Sin conexión";
@@ -289,6 +298,13 @@
     if(!value){ alert("Escribí una matrícula."); return; }
     if(!state.aircraft.includes(value)) state.aircraft.push(value);
     state.aircraft.sort(); saveState(); renderAircraft(); $("aircraft").value=value; $("newAircraft").value="";
+  });
+  $("aircraftList").addEventListener("click",e=>{
+    const b=e.target.closest("button[data-remove-aircraft]"); if(!b)return;
+    const value=b.dataset.removeAircraft;
+    if(confirm("¿Eliminar la matrícula "+value+"? Los reportes anteriores no se borran.")){
+      state.aircraft=state.aircraft.filter(a=>a!==value); saveState(); renderAircraft();
+    }
   });
   $("defaultOrigin").addEventListener("change",()=>{const v=$("defaultOrigin").value.trim().toUpperCase();if(v){state.defaultOrigin=v;saveState();if(!$("origin").value) $("origin").value=v;}});
   $("addAerodrome").addEventListener("click",()=>{const v=$("newAerodrome").value.trim().toUpperCase();if(!v){alert("Escribí un aeródromo o lugar.");return;}if(!state.aerodromes.includes(v))state.aerodromes.push(v);state.aerodromes.sort();saveState();renderAerodromes();$("newAerodrome").value="";});

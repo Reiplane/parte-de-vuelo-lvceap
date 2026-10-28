@@ -40,3 +40,6 @@ Funciones añadidas en versión 2:
 - Botón de comentario libre para novedades no asociadas a un movimiento.
 
 Versión 3: no solicita ni incluye el nombre del instructor en los mensajes. Muestra fecha y hora actual de Argentina y UTC, y la firma discreta reivaj en el borde inferior.
+
+
+VERSIÓN 6: la lista de matrículas comienza vacía. Se pueden agregar y eliminar matrículas desde la pantalla principal. Los reportes ya guardados no se eliminan al quitar una matrícula.
